@@ -46,6 +46,28 @@ int main(int argc, char** argv) {
         return 1;
     }
 
+        printf("Displaying...\n");
+    SDL_Window* window = SDL_CreateWindow("Test",
+                                          SDL_WINDOWPOS_UNDEFINED,
+                                          SDL_WINDOWPOS_UNDEFINED,
+                                          image->w, image->h,
+                                          SDL_WINDOW_SHOWN);
+    if(window == NULL) {
+        printf("Could not create window\n");
+        return 1;
+    }
+
+    
+    SDL_Surface* screen = SDL_GetWindowSurface(window);
+    if(screen == NULL) {
+        printf("Could not load screen\n");
+        return 1;
+    }
+    SDL_Surface* surface = convertToSurface(image);
+    
+    SDL_BlitSurface(surface, NULL, screen, NULL);
+    SDL_UpdateWindowSurface(window);
+
     double xweight = 1.0;
     double yweight = 1.0;
     
@@ -65,6 +87,7 @@ int main(int argc, char** argv) {
     }
 
     printf("Running kmeans...\n");
+    long timeUsed = 0;
     std::vector<Point>* meansPointer = kmeans(points, 100, 5.0);
     std::vector<Point>& means = *meansPointer;
     //printf("Means:\n");
@@ -87,24 +110,8 @@ int main(int argc, char** argv) {
     }
     delete meansPointer;
 
-    printf("Displaying...\n");
-    SDL_Window* window = SDL_CreateWindow("Test",
-                                          SDL_WINDOWPOS_UNDEFINED,
-                                          SDL_WINDOWPOS_UNDEFINED,
-                                          image->w, image->h,
-                                          SDL_WINDOW_SHOWN);
-    if(window == NULL) {
-        printf("Could not create window\n");
-        return 1;
-    }
-
-    
-    SDL_Surface* screen = SDL_GetWindowSurface(window);
-    if(screen == NULL) {
-        printf("Could not load screen\n");
-        return 1;
-    }
-    SDL_Surface* surface = convertToSurface(image);
+    SDL_FreeSurface(surface);
+    surface = convertToSurface(image);
     free(image->data);
     free(image);
     

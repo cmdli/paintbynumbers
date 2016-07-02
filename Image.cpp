@@ -206,10 +206,11 @@ Image* convertToImage(SDL_Surface* surface) {
         printf("Could not convert surface to image: surface is NULL\n");
         return NULL;
     }
-    if(surface->format->BitsPerPixel != 8) {
-        printf("Could not convert surface to image: not 8-bit\n");
-        return NULL;
-    }
+    printf("Format: r - %x\tg - %x\tb - %x\n",
+           surface->format->Rmask,
+           surface->format->Gmask,
+           surface->format->Bmask);
+    surface = SDL_ConvertSurfaceFormat(surface, SDL_PIXELFORMAT_BGR888, 0);
     SDL_LockSurface(surface);
     Image* image = (Image*)malloc(sizeof(Image));
     image->w = surface->w;
@@ -219,14 +220,15 @@ Image* convertToImage(SDL_Surface* surface) {
     int comp = image->numComponents;
     int w = image->w;
     int h = image->h;
+    int pitch = surface->pitch;
     image->data = (unsigned char*)malloc(sizeof(unsigned char)*w*h*comp);
     memcpy(image->data, surface->pixels, w*h*comp);
     SDL_UnlockSurface(surface);
+    SDL_FreeSurface(surface);
     return image;
 }
 
 SDL_Surface* convertToSurface(Image* image) {
-    //Assumes surface is in RGB format and data is in RGB format
     SDL_Surface* surface = SDL_CreateRGBSurface(0, image->w, image->h, 32, 0, 0, 0, 0);
     SDL_LockSurface(surface);
     Uint32* pixels = (Uint32*)surface->pixels;
@@ -239,7 +241,7 @@ SDL_Surface* convertToSurface(Image* image) {
                 g = r;
                 b = r;
             } else {
-                r = image->data[dataLoc];
+                r = image->data[dataLoc+0];
                 g = image->data[dataLoc+1];
                 b = image->data[dataLoc+2];
             }
